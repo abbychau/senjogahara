@@ -1,0 +1,26 @@
+body {
+	margin: 0 auto;
+	width:600px;
+	font-family: mingliu;
+    font-size: 13px;
+}
+button {
+	margin-top:20px;
+	height:25px;
+	width:120px;
+	color:blue;
+}
+
+#weiqi {
+	border: 0px solid blue;
+	position: absolute;
+	top:50px;
+}
+#path {
+	position: absolute;
+	top:50px;
+	/*
+	left:0;
+	*/
+	z-index: 200;
+}

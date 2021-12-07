@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>戰場原黑白</title>
+
+	<script src="https://cdn.socket.io/4.4.0/socket.io.min.js" integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj" crossorigin="anonymous"></script>
+	<script>
+		var socket = io();
+	</script>
+	<link rel="icon" href="icons/icon_128.png" type="image/x-icon" />
+	<link rel="stylesheet" href="css/style.css" />
+
+</head>
+
+<body>
+	<button id="move_show" type="button">顯示手數</button>
+	<button id="pass" type="button">虛手</button>
+	<button id="retreat" type="button">悔棋</button>
+	
+提子:
+	黑:<span id="black_took">0</span>
+	白:<span id="white_took">0</span>
+	
+	
+	<br />
+	<canvas id="weiqi" width="600" height="600"></canvas>
+	<canvas id="path" width="600" height="600"></canvas>
+</body>
+<script type="text/javascript" src="js/go.js"></script>
+<script type="text/javascript" src="js/play.js"></script>
+<script type="text/javascript" src="js/config.js"></script>
+</html>
