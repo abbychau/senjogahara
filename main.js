@@ -3,12 +3,24 @@ const fs = require("fs");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
+Array.prototype.remove = function() {
+  var what, a = arguments, L = a.length, ax;
+  while (L && this.length) {
+      what = a[--L];
+      while ((ax = this.indexOf(what)) !== -1) {
+          this.splice(ax, 1);
+      }
+  }
+  return this;
+};
+
+function leave(socket,data){
+  let roomID = data.room
+  socket.leave(roomID)
+  ROOMS[roomID].users.remove(socket.id)
+}
 function join(socket, data) {
   var room = data.room;
-  var oldRoom = getRoom(socket.id);
-  if (oldRoom != null && oldRoom != room) {
-    leave(socket);
-  }
   socket.join(room);
   socket.broadcast
     .to(room)
@@ -45,6 +57,13 @@ io.on("connection", (socket) => {
           .to(ROOMS[socket.id])
           .emit("data", { action: "pass", msg: "" });
         break;
+      case "leave":
+        socket.leave(data.room)
+        if(ROOMS[data.room].users.length == 0){
+          delete ROOMS[data.room];
+        }
+      case "commitSetup":
+        ROOMS[data.room].rules = data.rules;
       case "join":
         socket.join(data.room);
         socket.broadcast
