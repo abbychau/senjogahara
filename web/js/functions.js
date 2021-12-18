@@ -158,5 +158,3 @@ function addLoadEvent(func) {
 		}
 	}
 }
-
-addLoadEvent(initBoard);

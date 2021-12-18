@@ -2,38 +2,34 @@ const app = require("express")();
 const fs = require("fs");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-
-var ROOMS = {};
 var USERNAMES = {};
+var ROOMS = {};
+
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.emit('welcome', { msg: 'welcome' });
-  const roomid = "x"
-  socket.join(roomid);
+  socket.emit("welcome", { msg: "welcome" });
+
   socket.on("data", function (data) {
+    const roomid = ROOMS[socket.id];
     switch (data.action) {
       case "play":
-        socket
-          .broadcast
-          .to(roomid)
-          .emit("play", data);
-      break;
+        socket.broadcast.to(roomid).emit("play", data);
+        break;
       case "pass":
-        socket
-          .broadcast
-          .to(roomid)
-          .emit("data", { action: "pass", msg: "" });
-      break;
+        socket.broadcast.to(roomid).emit("data", { action: "pass", msg: "" });
+        break;
       case "join":
-        socket
-          .broadcast
-          .to(roomid)
-          .emit("data", {
-            action: "msg",
-            msg: USERNAMES[socket.id] + "進入房間了!",
-          });
-      break;
+        ROOMS[socket.id] = data.roomid;
+        socket.join(data.roomid);
+        
+        console.log(socket.id + " joined: " + data.roomid);
+
+        socket.broadcast.to(roomid).emit("data", {
+          action: "msg",
+          msg: socket.id + "進入房間了!",
+        });
+        break;
     }
   });
 
@@ -59,6 +55,6 @@ app.get("/*", function (req, res) {
     res.end();
   }
 });
-http.listen(process.env.PORT || 3000, () => {
+http.listen(3000, () => {
   console.log("listening");
 });

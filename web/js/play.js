@@ -92,6 +92,8 @@ function showPan() {
 			10, 10
 		);
 	}
+	blackDom.innerHTML = black_took;
+	whiteDom.innerHTML = white_took;
 }
 
 function play(row, col) {
@@ -152,10 +154,55 @@ function play(row, col) {
 
 	if (can_down) {
 		stone_down(row, col);
+		move_record.push([row, col, move_count, dead_body, current_move_color]);
 		socket.emit('data', {action: 'play', x: row, y: col, color: current_move_color});
 		// socket.emit('play', {x:row, y:col, color:current_move_color});
 	}
 }
+
+function pass(){
+	socket.emit('data', {action: 'pass'});
+	// change player
+	current_move = current_move === BLACK ? WHITE : BLACK;
+	// increase move count
+	move_count++;
+	// update move record
+	move_record.push([-1, -1, move_count, [], current_move]);
+}
+
+function take_back(){
+	if (move_record.length > 0) {
+		//check if is pass
+		if (move_record[move_record.length-1][0] === -1) {
+			move_record.pop();
+			move_count--;
+			current_move = current_move === BLACK ? WHITE : BLACK;
+			return;
+		}
+		var last_move = move_record.pop();
+		console.log(last_move[3])
+		//remove stone
+		pan[last_move[0]][last_move[1]] = 0;
+
+		//put back dead body
+		for (var i = 0; i < last_move[3].length; i++) {
+			pan[last_move[3][i][0]][last_move[3][i][1]] = last_move[4];
+			if(last_move[4] == BLACK){
+				black_took--;
+			}else{
+				white_took--;
+			}
+		}
+
+		move_count--;
+		current_move_color = last_move[4] === BLACK ? WHITE : BLACK;
+
+		showPan();
+		socket.emit('data', {action: 'take_back', x: last_move[0], y: last_move[1]});
+		// socket.emit('take_back', {x:last_move[0], y:last_move[1]});
+	}
+}
+
 
 // TODO 劫爭處理的本質是防止全局同型，基於此，還是要處理連環劫之類的，再說吧
 // 我先看看應氏圍棋規則，研究研究
@@ -249,10 +296,8 @@ function clean_dead_body(db) {
 	}
 	if(current_move_color === WHITE){
 		white_took += db.length;
-		whiteDom.innerHTML = white_took;
 	}else{
 		black_took += db.length;
-		blackDom.innerHTML = black_took;
 	}
 }
 
@@ -339,5 +384,4 @@ function stone_down(row, col) {
 	pan[row][col] = current_move_color;
 	current_move_color = current_move_color === BLACK ? WHITE : BLACK;
 	move_count ++;
-	move_record.push([row, col, move_count]);
 }
