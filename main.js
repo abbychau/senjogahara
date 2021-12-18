@@ -59,6 +59,6 @@ app.get("/*", function (req, res) {
     res.end();
   }
 });
-http.listen(8080, () => {
+http.listen(process.env.PORT || 3000, () => {
   console.log("listening");
 });
