@@ -3,31 +3,117 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title>戰場原黑白</title>
-
-	<script src="https://cdn.socket.io/4.4.0/socket.io.min.js" integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj" crossorigin="anonymous"></script>
-	<script>
-		var socket = io();
-	</script>
 	<link rel="icon" href="icons/icon_128.png" type="image/x-icon" />
 	<link rel="stylesheet" href="css/style.css" />
-
 </head>
 
 <body>
+
+<div style="
+width: 100vh;
+height: 100vw;
+display: block;
+background-color: white;
+z-index: 1;
+position: fixed;
+">
+<div style="">
+	<button onclick='socket.emit("join",{"roomid":1234});'>Connect</button>
+</div>
+</div>
+
 	<button id="move_show" type="button">顯示手數</button>
 	<button id="pass" type="button">虛手</button>
 	<button id="retreat" type="button">悔棋</button>
 	
-提子:
-	黑:<span id="black_took">0</span>
-	白:<span id="white_took">0</span>
-	
-	
-	<br />
+	提子: 黑:<span id="black_took">0</span> 白:<span id="white_took">0</span><br />
 	<canvas id="weiqi" width="600" height="600"></canvas>
 	<canvas id="path" width="600" height="600"></canvas>
 </body>
-<script type="text/javascript" src="js/go.js"></script>
+
+<script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script>
+<script type="text/javascript" src="js/functions.js"></script>
+<script>
+	const socket = io();
+	var move_show_flag = false;
+	var move_count = 0;
+
+	const AIR = 0;
+	const BLACK = 1;
+	const WHITE = 2;
+
+	var current_move_color = BLACK; // 預設為黑子
+	var move_count = 0;
+
+	// Some Global Values
+	var pan = new Array(
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	);
+	var shadow = new Array(
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	);
+	var jie = new Array();
+	var move_record = new Array();
+	var whiteDom = document.getElementById("white_took");
+	var blackDom = document.getElementById("black_took");
+	var white_took = 0;
+	var black_took = 0;
+
+	addLoadEvent(function(){
+		document.getElementById("pass").onclick = function() {
+			alert("X1")
+		}
+		document.getElementById("retreat").onclick = function() {
+			alert("X2")
+		}
+		document.getElementById("move_show").onclick = function() {
+			if (move_show_flag) {
+				move_show_button.innerHTML="顯示手數";
+				move_show_flag = false;
+			} else {
+				move_show_button.innerHTML="取消顯示手數";
+				move_show_flag = true;
+			}
+			showPan();
+		}
+	});
+</script>
+<script type="text/javascript" src="js/socket.js"></script>
 <script type="text/javascript" src="js/play.js"></script>
-<script type="text/javascript" src="js/config.js"></script>
 </html>

@@ -3,57 +3,37 @@ const fs = require("fs");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
-function join(socket, data) {
-  var room = data.room;
-  var oldRoom = getRoom(socket.id);
-  if (oldRoom != null && oldRoom != room) {
-    leave(socket);
-  }
-  socket.join(room);
-  socket.broadcast
-    .to(room)
-    .emit("data", { action: "msg", msg: getNameBySocket(socket) + msg });
-  socket.emit("data", { action: "msg", msg: "您" + msg });
-  var ids = io.sockets.adapter.rooms[room].sockets;
-  for (var id in ids) {
-    if (id == socket.id) {
-      continue;
-    }
-    socket.emit("data", { action: "msg", msg: getNameBySocketId(id) + msg });
-  }
-  var record = getRecord(room);
-  if (record != null) {
-    for (var i = 0; i < record.length; ++i) {
-      socket.emit("data", record[i]);
-    }
-  }
-}
-
 var ROOMS = {};
 var USERNAMES = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
+  socket.emit('welcome', { msg: 'welcome' });
+  const roomid = "x"
+  socket.join(roomid);
   socket.on("data", function (data) {
-    console.log(socket.id, data);
     switch (data.action) {
       case "play":
-        socket.broadcast.to(ROOMS[socket.id]).emit("play", data);
-        break;
+        socket
+          .broadcast
+          .to(roomid)
+          .emit("play", data);
+      break;
       case "pass":
-        socket.broadcast
-          .to(ROOMS[socket.id])
+        socket
+          .broadcast
+          .to(roomid)
           .emit("data", { action: "pass", msg: "" });
-        break;
+      break;
       case "join":
-        socket.join(data.room);
-        socket.broadcast
-          .to(ROOMS[socket.id])
+        socket
+          .broadcast
+          .to(roomid)
           .emit("data", {
             action: "msg",
             msg: USERNAMES[socket.id] + "進入房間了!",
           });
-        break;
+      break;
     }
   });
 
@@ -61,6 +41,7 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 });
+
 app.get("/*", function (req, res) {
   var url = req.url;
   var pos = url.indexOf("?");

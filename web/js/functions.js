@@ -1,6 +1,5 @@
 
 function grid(cxt) {
-	// the first point is (30, 30)
 	for (var i = 0; i < 19; i++) {
 		cxt.beginPath();
 		cxt.moveTo(0+30,   (i+1)*30);
@@ -17,15 +16,9 @@ function grid(cxt) {
 
 function ninePoints(cxt) {
 	var np = new Array(
-		[120,120],
-		[300,120],
-		[480,120],
-		[120,300],
-		[300,300],
-		[480,300],
-		[120,480],
-		[300,480],
-		[480,480]
+		[120,120],[300,120],[480,120],
+		[120,300],[300,300],[480,300],
+		[120,480],[300,480],[480,480]
 	);
 	
 	for (var i = 0; i < np.length; i++) {
@@ -37,12 +30,11 @@ function ninePoints(cxt) {
 	}
 }
 
-var move_count = 0;
 function mousedownHandler(e) {
 	var x, y;
 	if (e.offsetX || e.offsetX == 0) {
-		x = e.offsetX; //- imageView.offsetLeft;
-		y = e.offsetY; //- imageView.offsetTop;
+		x = e.offsetX;
+		y = e.offsetY;
 	}
 	if (x < 30-10 || x > 600-30+10)
 		return;
@@ -69,7 +61,6 @@ function mousedownHandler(e) {
 		return;
 
 	play(x_, y_, move_count);
-	socket.emit('data', {action: 'play', x: x_, y: y_, move_count: move_count});
 	showPan();
 	// now we put the new stone on the board
 	/*
@@ -167,5 +158,5 @@ function addLoadEvent(func) {
 		}
 	}
 }
-//window.addEventListener("load", initBoard, true);
+
 addLoadEvent(initBoard);
