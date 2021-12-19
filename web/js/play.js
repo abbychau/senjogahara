@@ -196,12 +196,12 @@ function takeback(sendBack){
 
 		move_count--;
 		current_move_color = last_move[4] === BLACK ? WHITE : BLACK;
+		if(sendBack){
+			socket.emit('data', {action: 'takeback', x: last_move[0], y: last_move[1]});
+			console.log('sending takeback');
+		}
+	}
 
-	}
-	if(sendBack){
-		socket.emit('data', {action: 'takeback', x: last_move[0], y: last_move[1]});
-		console.log('sending takeback');
-	}
 }
 
 

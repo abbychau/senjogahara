@@ -23,11 +23,20 @@ io.on("connection", (socket) => {
         RECORDS[roomid].push(data);
         console.log(RECORDS)
         break;
+      case "clear":
+        socket
+        .broadcast
+        .to(roomid)
+        .emit("clear", data);
+        break;
+      case "replay":
+        socket.broadcast.to(roomid).emit("replay", {});
+        break;
       case "pass":
         socket.broadcast.to(roomid).emit("pass", {});
         break;
       case "takeback":
-        socket.broadcast.to(roomid).emit("takeback", {});
+        socket.broadcast.to(roomid).emit("takeback", RECORDS[ROOMS[socket.id]]);
         break;
       case "join":
         ROOMS[socket.id] = data.roomid;
