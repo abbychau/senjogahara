@@ -28,7 +28,7 @@
 
     <button id="move_show" type="button">顯示手數</button>
     <button id="pass" type="button">虛手</button>
-    <button id="take_back" type="button">悔棋</button>
+    <button id="takeback" type="button">悔棋</button>
 
     提子: 黑:<span id="black_took">0</span> 白:<span id="white_took">0</span
     ><br />
@@ -102,10 +102,11 @@
 
     addLoadEvent(function () {
       document.getElementById("pass").onclick = function () {
-        alert("X1");
+        pass();
       };
-      document.getElementById("take_back").onclick = function () {
-        take_back();
+      document.getElementById("takeback").onclick = function () {
+        takeback(true);
+      	showPan();
       };
       document.getElementById("move_show").onclick = function () {
         if (move_show_flag) {

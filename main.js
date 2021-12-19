@@ -4,7 +4,7 @@ const http = require("http").Server(app);
 const io = require("socket.io")(http);
 var USERNAMES = {};
 var ROOMS = {};
-
+var RECORDS = {}
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -15,9 +15,19 @@ io.on("connection", (socket) => {
     switch (data.action) {
       case "play":
         socket.broadcast.to(roomid).emit("play", data);
+
+        //append to record
+        if (RECORDS[roomid] === undefined) {
+          RECORDS[roomid] = [];
+        }
+        RECORDS[roomid].push(data);
+        console.log(RECORDS)
         break;
       case "pass":
-        socket.broadcast.to(roomid).emit("data", { action: "pass", msg: "" });
+        socket.broadcast.to(roomid).emit("pass", {});
+        break;
+      case "takeback":
+        socket.broadcast.to(roomid).emit("takeback", {});
         break;
       case "join":
         ROOMS[socket.id] = data.roomid;
@@ -25,10 +35,19 @@ io.on("connection", (socket) => {
         
         console.log(socket.id + " joined: " + data.roomid);
 
-        socket.broadcast.to(roomid).emit("data", {
+        socket.broadcast.to(ROOMS[socket.id]).emit("data", {
           action: "msg",
           msg: socket.id + "進入房間了!",
         });
+
+        var record = RECORDS[ROOMS[socket.id]];
+        console.log(record)
+        if (record != null) {
+          for (var i = 0; i < record.length; ++i) {
+            socket.emit('play', record[i]);
+          }
+        }
+
         break;
     }
   });

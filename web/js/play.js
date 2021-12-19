@@ -170,7 +170,7 @@ function pass(){
 	move_record.push([-1, -1, move_count, [], current_move]);
 }
 
-function take_back(){
+function takeback(sendBack){
 	if (move_record.length > 0) {
 		//check if is pass
 		if (move_record[move_record.length-1][0] === -1) {
@@ -197,9 +197,10 @@ function take_back(){
 		move_count--;
 		current_move_color = last_move[4] === BLACK ? WHITE : BLACK;
 
-		showPan();
-		socket.emit('data', {action: 'take_back', x: last_move[0], y: last_move[1]});
-		// socket.emit('take_back', {x:last_move[0], y:last_move[1]});
+	}
+	if(sendBack){
+		socket.emit('data', {action: 'takeback', x: last_move[0], y: last_move[1]});
+		console.log('sending takeback');
 	}
 }
 
